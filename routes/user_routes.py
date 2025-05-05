@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask import Blueprint, request, jsonify
-from models.project import project
+from models.user import User
 from utils import firbase
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -8,22 +8,22 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 app = Flask(__name__)
 CORS(app)
 
-project_bp = Blueprint('project', __name__)  # nombre e identificador
+user_bp = Blueprint('user', __name__)  # nombre e identificador
 
-colection_ref = firbase.db.collection('proyectos')
+colection_ref = firbase.db.collection('usuarios')
 #app.config['JWT_SECRET_KEY'] = 'uptc2025'  
 #jwt = JWTManager(app)
 
-@project_bp.route('/listarProyectos', methods=['GET'])
+@user_bp.route('/listarUsuarios', methods=['GET'])
 # @jwt_required()
-def listar_proyectos():
-    proyectos_ref = colection_ref.stream()
-    proyectos = [doc.to_dict() for doc in proyectos_ref]
-    return jsonify(proyectos), 200
+def listar_usuarios():
+    usuarios_ref = colection_ref.stream()
+    usuarios = [doc.to_dict() for doc in usuarios_ref]
+    return jsonify(usuarios), 200
 
-@project_bp.route('/crearProyecto', methods=['POST'])
+@user_bp.route('/crearUsuario', methods=['POST'])
 #@jwt_required()
-def crear_proyecto():
+def crear_usuario():
     data = request.get_json()
     id = data.get('id')
 
@@ -32,9 +32,9 @@ def crear_proyecto():
 
     return jsonify({"mensaje": "Proyecto creado exitosamente"}), 201
 
-@project_bp.route('/actualizarProyecto/<string:id>', methods=['PUT'])
+@user_bp.route('/actualizarUsuario/<string:id>', methods=['PUT'])
 # #@jwt_required()
-def actualizar_proyecto(id):
+def actualizar_usuarios(id):
     data = request.get_json()
     doc_ref = colection_ref.document(id)
     doc = doc_ref.get()
@@ -45,16 +45,16 @@ def actualizar_proyecto(id):
     doc_ref.update(data)
     return jsonify({"mensaje": "Proyecto actualizado exitosamente"}), 200
 
-@project_bp.route('/obtenerProyecto/<string:id>', methods=['GET'])
-def obtener_proyecto(id):
+@user_bp.route('/obtenerUsuario/<string:id>', methods=['GET'])
+def obtener_usuario(id):
     doc = colection_ref.document(id).get()
     if doc.exists:
         return jsonify(doc.to_dict()), 200
     else:
         return jsonify({"mensaje": "Proyecto no encontrado"}), 404
 
-@project_bp.route('/eliminarProyecto/<string:id>', methods=['DELETE'])
-def eliminar_proyecto(id):
+@user_bp.route('/eliminarUsuario/<string:id>', methods=['DELETE'])
+def eliminar_usuario(id):
     doc_ref = colection_ref.document(id)
     if not doc_ref.get().exists:
         return jsonify({"mensaje": "Proyecto no encontrado"}), 404
