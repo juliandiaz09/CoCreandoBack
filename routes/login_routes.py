@@ -5,11 +5,6 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 app = Flask(__name__)
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = 'uptc2025'  
-jwt = JWTManager(app)
-
-proyectos = []
-
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
