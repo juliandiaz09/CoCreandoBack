@@ -43,9 +43,19 @@ def login():
         AuthValidations.update_login_metrics(user_ref)
 
         # 7. Preparar respuesta exitosa
-        return jsonify({
-            "success": True
-        }), 200
+        custom_token = auth.create_custom_token(user.uid)
+    access_token = create_access_token(identity=user.uid)
+    
+    return jsonify({
+        "success": True,
+        "token": access_token,
+        "user": {
+            "uid": user.uid,
+            "email": user.email,
+            "rol": user_data.get('rol', 'usuario'),
+            # otros campos que necesites en el front
+        }
+    }), 200
 
     except auth.UserNotFoundError:
         return jsonify({
