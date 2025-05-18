@@ -1,0 +1,1 @@
+from .firbase import firebase_auth_required

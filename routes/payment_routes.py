@@ -3,7 +3,13 @@ from utils.payu_config import generar_formulario_pago
 from utils import firbase
 
 
-payment_bp = Blueprint('payment', __name__)
+payment_bp = Blueprint('payment_bp', __name__)
+
+@payment_bp.route('/procesar-pago', methods=['POST'])
+def procesar_pago():
+    datos = request.json
+    respuesta_simulada = generar_formulario_pago(datos)
+    return jsonify(respuesta_simulada)
 
 @payment_bp.route('/crear-pago', methods=['POST'])
 def crear_pago():

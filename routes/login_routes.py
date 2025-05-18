@@ -1,18 +1,20 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from Validations import AuthValidations
+from utils.Validations import AuthValidations
+from utils.firbase import db
 import firebase_admin 
 from firebase_admin import credentials, auth, firestore
-
+import os
+ 
 app = Flask(__name__)
 CORS(app)
-    
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
 
-@app.route('/login', methods=['POST'])
+auth_bp = Blueprint('auth_bp', __name__)
+
+
+
+@auth_bp.route('/login', methods=['POST'])
 def login():
     # 1. Validar formato del request
     if error := AuthValidations.validate_request(request):
@@ -44,18 +46,18 @@ def login():
 
         # 7. Preparar respuesta exitosa
         custom_token = auth.create_custom_token(user.uid)
-    access_token = create_access_token(identity=user.uid)
+        access_token = create_access_token(identity=user.uid)
     
-    return jsonify({
-        "success": True,
-        "token": access_token,
-        "user": {
-            "uid": user.uid,
-            "email": user.email,
-            "rol": user_data.get('rol', 'usuario'),
-            # otros campos que necesites en el front
-        }
-    }), 200
+        return jsonify({
+         "success": True,
+            "token": access_token,
+         "user": {
+              "uid": user.uid,
+              "email": user.email,
+              "rol": user_data.get('rol', 'usuario'),
+                # otros campos que necesites en el front
+            }
+        }), 200
 
     except auth.UserNotFoundError:
         return jsonify({
