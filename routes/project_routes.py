@@ -8,7 +8,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 app = Flask(__name__)
 CORS(app)
 
-project_bp = Blueprint('project', __name__)  # nombre e identificador
+project_bp = Blueprint('project_bp', __name__)  # nombre e identificador
 
 colection_ref = firbase.db.collection('proyectos')
 #app.config['JWT_SECRET_KEY'] = 'uptc2025'  

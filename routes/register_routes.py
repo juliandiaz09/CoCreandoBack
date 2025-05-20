@@ -6,7 +6,7 @@ from utils.Validations import AuthValidations
 # Crear Blueprint para las rutas de registro
 register_bp = Blueprint('register_bp', __name__)
 
-@register_bp.route('/register', methods=['POST'])
+@register_bp.route('', methods=['POST'])
 def register_user():
 
     try:
