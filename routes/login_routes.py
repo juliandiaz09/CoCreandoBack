@@ -11,9 +11,11 @@ login_bp = Blueprint('login', __name__)
 CORS(login_bp, supports_credentials=True)
 
 
-# Inicializar Firebase Admin
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# cred_path = os.path.join(BASE_DIR, 'cocreando.json')
+# Construir la ruta absoluta al JSON
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+cred_path = os.path.join(BASE_DIR, 'cocreando.json')
+
+# Inicializar Firebase
 cred = credentials.Certificate("/etc/secrets/cocreando.json")
 
 if not firebase_admin._apps:

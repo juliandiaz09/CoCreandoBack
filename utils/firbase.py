@@ -25,11 +25,11 @@ PERMISSIONS = {
 }
 
 # Construir la ruta absoluta al JSON
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# cred_path = os.path.join(BASE_DIR, '/etc/secrets/cocreando.json')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+cred_path = os.path.join(BASE_DIR, 'cocreando.json')
 
 # Inicializar Firebase
-cred = credentials.Certificate("/etc/secrets/cocreando.json")
+cred = credentials.Certificate(cred_path)
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 db = firestore.client()
