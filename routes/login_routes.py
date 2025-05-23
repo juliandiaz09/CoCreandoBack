@@ -12,9 +12,9 @@ CORS(login_bp, supports_credentials=True)
 
 
 # Inicializar Firebase Admin
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(BASE_DIR, 'cocreando.json')
-cred = credentials.Certificate(cred_path)
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# cred_path = os.path.join(BASE_DIR, 'cocreando.json')
+cred = credentials.Certificate("/etc/secrets/cocreando.json")
 
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
