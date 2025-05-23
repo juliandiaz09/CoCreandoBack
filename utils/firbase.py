@@ -30,8 +30,10 @@ cred_path = os.path.join(BASE_DIR, 'cocreando.json')
 
 # Inicializar Firebase
 cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
 db = firestore.client()
+
 
 def firebase_auth_required(permission=None):
     def decorator(f):
