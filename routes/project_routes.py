@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from models.project import project
 from utils import firbase
 from flask_cors import CORS
+from flask_cors import cross_origin
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 app = Flask(__name__)
@@ -15,11 +16,18 @@ colection_ref = firbase.db.collection('proyectos')
 #jwt = JWTManager(app)
 
 @project_bp.route('/listarProyectos', methods=['GET'])
-# @jwt_required()
+@cross_origin(supports_credentials=True)
 def listar_proyectos():
-    proyectos_ref = colection_ref.stream()
-    proyectos = [doc.to_dict() for doc in proyectos_ref]
-    return jsonify(proyectos), 200
+    try:
+        proyectos_ref = colection_ref.stream()
+        proyectos = []
+        for doc in proyectos_ref:
+            proyecto = doc.to_dict()
+            proyecto["id"] = doc.id 
+            proyectos.append(proyecto)
+        return jsonify(proyectos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @project_bp.route('/crearProyecto', methods=['POST'])
 #@jwt_required()

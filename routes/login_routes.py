@@ -16,7 +16,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(BASE_DIR, 'cocreando.json')
 
 # Inicializar Firebase
-cred = credentials.Certificate("/etc/secrets/cocreando.json")
+cred = credentials.Certificate("services/cocreando.json")
 
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
