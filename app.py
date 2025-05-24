@@ -8,8 +8,6 @@ from routes.payment_routes import payment_bp
 from routes.user_routes import user_bp
 from socketio_app import socketio  # 👈 Importa socketio desde el archivo separado
 
-
-
 app = Flask(__name__)
 
 # CORS global (solo para pruebas locales, en producción usa origen específico)

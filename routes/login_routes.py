@@ -70,11 +70,6 @@ def login():
         user = auth.get_user(uid)
         print("🧠 Usuario obtenido:", user.email)
 
-        # # 3. Consultar Firestore (opcional)
-        # user_ref = db.collection('usua').document(uid)
-        # if not user_ref.get().exists:
-        #     return jsonify({"success": False, "message": "Usuario no encontrado en Firestore"}), 404
-
         # 4. Respuesta exitosa
         return jsonify({
             "success": True,
