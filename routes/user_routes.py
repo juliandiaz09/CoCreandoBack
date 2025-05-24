@@ -48,12 +48,38 @@ def actualizar_usuarios(id):
     return jsonify({"mensaje": "Usuario actualizado"}), 200
 
 #UNICA FUNCIÓN EJECUTADA EN ESTE COMMIT - USO DE DECORADOR FUNCIONALIDAD - AÚN NO SE ESTABLECEN ROLES
-@user_bp.route('/obtenerUsuario/<string:id>', methods=['GET', 'OPTIONS'])
+@user_bp.route('/obtenerUsuario/<string:id>', methods=['GET'])
 @firebase_auth_required('obtener_usuario')
 def obtener_usuario(id):
-    doc = colection_ref.document(id).get()
-    return jsonify(doc.to_dict() if doc.exists else {"error": "No encontrado"}), 200 if doc.exists else 404
-
+    try:
+        # Obtener referencia al documento del usuario
+        doc_ref = colection_ref.document(id)
+        doc = doc_ref.get()
+        
+        if not doc.exists:
+            # Si no existe en la colección 'usuarios', verificar en auth de Firebase
+            try:
+                user_record = auth.get_user(id)
+                # Crear documento básico si no existe
+                user_data = {
+                    'uid': user_record.uid,
+                    'email': user_record.email,
+                    'email_verified': user_record.email_verified,
+                    'name': user_record.display_name or user_record.email.split('@')[0],
+                    'rol': 'usuario',  # Valor por defecto
+                    'status': 'active',  # Valor por defecto
+                    'login_count': 0  # Valor por defecto
+                }
+                doc_ref.set(user_data)
+                return jsonify(user_data), 200
+            except Exception as auth_error:
+                return jsonify({"error": "Usuario no encontrado"}), 404
+        
+        return jsonify(doc.to_dict()), 200
+    except Exception as e:
+        print(f"Error al obtener usuario: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    
 @user_bp.route('/eliminarUsuario/<string:id>', methods=['DELETE'])
 #@firebase_auth_required('eliminar_usuario')
 def eliminar_usuario(id):
