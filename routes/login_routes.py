@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, Flask, request, jsonify
 from flask_cors import CORS
 import requests
@@ -5,18 +6,15 @@ import firebase_admin
 from firebase_admin import credentials, auth, firestore
 from firebase_admin.exceptions import FirebaseError
 import os
+from utils.Validations import AuthValidations
 
 app = Flask(__name__)
 login_bp = Blueprint('login', __name__)
 CORS(login_bp, supports_credentials=True)
 
-#Solo se requiere una inicialización de base de datos
-
-# Construir la ruta absoluta al JSON
+# Configuración de Firebase
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(BASE_DIR, 'cocreando.json')
-
-# Inicializar Firebase
 cred = credentials.Certificate(cred_path)
 
 if not firebase_admin._apps:
@@ -24,10 +22,8 @@ if not firebase_admin._apps:
 
 db = firestore.client()
 
-# 🔐 Función auxiliar para autenticación por correo/contraseña
 def firebase_login(email, password):
-    #Pasar esto a variables de entorno
-    API_KEY = "AIzaSyDnCfzF5psHLcnmbeJGrBuWpxOkUp01Lfo"  # ← Reemplaza con tu API Key de Firebase
+    API_KEY = "AIzaSyDnCfzF5psHLcnmbeJGrBuWpxOkUp01Lfo"
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
 
     payload = {
@@ -43,60 +39,67 @@ def firebase_login(email, password):
     else:
         return None, response.json()
 
-@login_bp.route('', methods=['POST'])  # NO necesitas OPTIONS explícitamente si usas flask-cors
+@login_bp.route('', methods=['POST'])
 def login():
     try:
+        # 1. Validar formato del request
+        validation_result = AuthValidations.validate_request(request)
+        if validation_result:
+            return validation_result
+
         data = request.get_json()
         email = data.get('email', '').strip().lower()
         password = data.get('password')
 
-        if not email or not password:
-            return jsonify({"success": False, "message": "Email y contraseña requeridos"}), 400
+        # 2. Validar credenciales básicas (incluye validación de email)
+        validation_result = AuthValidations.validate_credentials(data)
+        if validation_result:
+            return validation_result
 
-        # 1. Autenticación básica
+        # 3. Verificar si el usuario existe en Firebase Auth
+        try:
+            user = auth.get_user_by_email(email)
+        except auth.UserNotFoundError:
+            return jsonify({
+                "success": False,
+                "message": "Tu usuario no existe, por favor regístrate",
+                "code": "user_not_found"
+            }), 404
+
+        # 4. Autenticar con Firebase
         auth_data, error_info = firebase_login(email, password)
-
         if not auth_data:
             return jsonify({
                 "success": False,
-                "message": "Credenciales incorrectas",
-                "details": error_info
+                "message": "Usuario o contraseña incorrectos",
+                "code": "wrong_credentials"
             }), 401
 
+        # 5. Verificar/crear perfil en Firestore
         uid = auth_data["localId"]
-        print("✅ UID que se usará para get_user:", uid)
+        user_ref = db.collection('usua').document(uid)
+        
+        if not user_ref.get().exists:
+            user_ref.set({
+                'email': email,
+                'name': user.display_name or email.split('@')[0],
+                'created_at': datetime.utcnow(),
+                'status': 'active'
+            })
 
-        # 2. Obtener usuario desde Firebase Admin SDK
-        user = auth.get_user(uid)
-        print("🧠 Usuario obtenido:", user.email)
-
-        # 4. Respuesta exitosa
+        # 6. Respuesta exitosa
         return jsonify({
             "success": True,
             "message": "Inicio de sesión exitoso",
-            "token": auth_data["idToken"],  # 👈 incluye el token aquí
+            "token": auth_data["idToken"],
             "user": {
-                "id": user.uid,
-                "email": user.email,
-                "name": user.display_name 
+                "id": uid,
+                "email": email,
+                "name": user.display_name or email.split('@')[0]
             }
         }), 200
 
-
-    except auth.UserDisabledError:
-        return jsonify({"success": False, "message": "Cuenta deshabilitada"}), 403
-
-    except FirebaseError as e:
-        return jsonify({
-            "success": False,
-            "message": f"Error de autenticación: {str(e)}",
-            "code": "firebase_error"
-        }), 500
-
     except Exception as e:
-        import traceback
-        print("🔥 TRACEBACK COMPLETO 🔥")
-        traceback.print_exc()
         return jsonify({
             "success": False,
             "message": f"Error inesperado: {str(e)}",
