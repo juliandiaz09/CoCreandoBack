@@ -10,6 +10,7 @@ app = Flask(__name__)
 login_bp = Blueprint('login', __name__)
 CORS(login_bp, supports_credentials=True)
 
+#Solo se requiere una inicialización de base de datos
 
 # Construir la ruta absoluta al JSON
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +26,7 @@ db = firestore.client()
 
 # 🔐 Función auxiliar para autenticación por correo/contraseña
 def firebase_login(email, password):
+    #Pasar esto a variables de entorno
     API_KEY = "AIzaSyDnCfzF5psHLcnmbeJGrBuWpxOkUp01Lfo"  # ← Reemplaza con tu API Key de Firebase
     url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
 

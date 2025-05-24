@@ -56,23 +56,26 @@ def firebase_auth_required(permission=None):
                 decoded_token = auth.verify_id_token(id_token)
                 uid = decoded_token['uid']
                 # Obtiene usuario desde Firestore
-                user_doc = db.collection('usuarios').document(uid).get()
+                user_doc = db.collection('users').document(uid).get()
                 if not user_doc.exists:
                     return jsonify({"error": "Usuario no registrado"}), 404
 
                 user_data = user_doc.to_dict()
-                #user_role = user_data.get('rol', 'usuario')
-                # Guarda la info en request.user
+                user_role = user_data.get('rol')
+
                 request.user = {
                     'uid': uid,
                     'email': decoded_token.get('email'),
                     **user_data
                 }
 
+                # Verificación de permisos
+                if permission:
+                    role_permissions = PERMISSIONS[user_role]
+                    if not role_permissions.get(permission, False):
+                        return jsonify({"error": f"Permiso denegado para la acción '{permission}'"}), 403
 
-                response = f(*args, **kwargs)
-                return response
-
+                return f(*args, **kwargs)
 
             except Exception as e:
                 return jsonify({"error": f"Error de autenticación: {str(e)}"}), 401

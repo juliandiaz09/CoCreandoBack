@@ -12,8 +12,7 @@ CORS(app)
 project_bp = Blueprint('project_bp', __name__)  # nombre e identificador
 
 colection_ref = firbase.db.collection('proyectos')
-#app.config['JWT_SECRET_KEY'] = 'uptc2025'  
-#jwt = JWTManager(app)
+
 
 @project_bp.route('/listarProyectos', methods=['GET'])
 @cross_origin(supports_credentials=True)

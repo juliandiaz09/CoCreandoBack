@@ -6,6 +6,8 @@ from routes.register_routes import register_bp
 from routes.project_routes import project_bp
 from routes.payment_routes import payment_bp
 from routes.user_routes import user_bp
+from socketio_app import socketio  # 👈 Importa socketio desde el archivo separado
+
 
 
 app = Flask(__name__)
@@ -20,6 +22,8 @@ app.register_blueprint(project_bp, url_prefix='/proyecto')
 app.register_blueprint(payment_bp, url_prefix='/pasarela')
 app.register_blueprint(user_bp, url_prefix='/usuario')
 
+# Inicializar SocketIO con tu app
+socketio.init_app(app)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
