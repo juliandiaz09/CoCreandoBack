@@ -29,6 +29,9 @@ def register_user():
             email_verified=False
         )
 
+        # Generar token personalizado
+        custom_token = auth.create_custom_token(user.uid)
+
         # 5. Crear registro en Firestore
         user_ref = firestore.client().collection('users').document(user.uid)
         user_data = {
@@ -51,9 +54,10 @@ def register_user():
                 "uid": user.uid,
                 "name": name,
                 "email": email,
-                "rol": "usuario",
+                "rol": "usuario",  # Asegurar que el rol se envía
                 "status": "active"
-            }
+            },
+            "token": custom_token.decode('utf-8')  # Enviar token generado
         }
 
         return jsonify(response_data), 201
