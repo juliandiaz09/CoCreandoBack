@@ -4,6 +4,7 @@ from models.project import project
 from utils import firbase
 from flask_cors import CORS
 from flask_cors import cross_origin
+from datetime import datetime
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 app = Flask(__name__)
@@ -30,15 +31,59 @@ def listar_proyectos():
         return jsonify({"error": str(e)}), 500
 
 @project_bp.route('/crearProyecto', methods=['POST'])
-#@jwt_required()
+@cross_origin(supports_credentials=True)
 def crear_proyecto():
-    data = request.get_json()
-    id = data.get('id')
-
-    doc_ref = colection_ref.document(id)
-    doc_ref.set(data)
-
-    return jsonify({"mensaje": "Proyecto creado exitosamente"}), 201
+    try:
+        data = request.get_json()
+        
+        # Validar datos requeridos
+        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
+        
+        # Crear documento en Firestore
+        doc_ref = colection_ref.document()
+        project_id = doc_ref.id
+        
+         # Convertir la fecha deadline a formato ISO si es una cadena
+        deadline = data["deadline"]
+        if isinstance(deadline, str):
+            try:
+                deadline = datetime.fromisoformat(deadline).isoformat()
+            except ValueError:
+                return jsonify({"error": "Formato de fecha inválido"}), 400
+            
+        # Estructurar datos del proyecto
+        project_data = {
+            "id": project_id,
+            "title": data["title"],
+            "description": data["description"],
+            "longDescription": data.get("longDescription", ""),
+            "goal": float(data["goal"]),
+            "collected": 0.0,
+            "category": data["category"],
+            "deadline": data["deadline"],
+            "location": data.get("location", ""),
+            "creator": data["creator"],
+            "risksAndChallenges": data.get("risksAndChallenges", ""),
+            "rewards": data.get("rewards", []),
+            "updates": data.get("updates", []),
+            "supporters": [],
+            "status": "pending",
+            "createdAt": datetime.now().isoformat()
+        }
+        
+        doc_ref.set(project_data)
+        
+        return jsonify({
+            "mensaje": "Proyecto creado exitosamente",
+            "projectId": project_id
+        }), 201
+        
+    except Exception as e:
+        print(f"Error al crear proyecto: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @project_bp.route('/actualizarProyecto/<string:id>', methods=['PUT'])
 # #@jwt_required()
