@@ -16,7 +16,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 cred_path = os.path.join(BASE_DIR, 'cocreando.json')
 
 # Inicializar Firebase
-cred = credentials.Certificate("services/cocreando.json")
+cred = credentials.Certificate(cred_path)
 
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
@@ -76,8 +76,15 @@ def login():
         # 4. Respuesta exitosa
         return jsonify({
             "success": True,
-            "message": "Inicio de sesión exitoso"
+            "message": "Inicio de sesión exitoso",
+            "token": auth_data["idToken"],  # 👈 incluye el token aquí
+            "user": {
+                "id": user.uid,
+                "email": user.email,
+                "name": user.display_name 
+            }
         }), 200
+
 
     except auth.UserDisabledError:
         return jsonify({"success": False, "message": "Cuenta deshabilitada"}), 403
