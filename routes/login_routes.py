@@ -77,16 +77,8 @@ def login():
 
         # 5. Verificar/crear perfil en Firestore
         uid = auth_data["localId"]
-        user_ref = db.collection('usua').document(uid)
+        user_ref = db.collection('users').document(uid)
         
-        if not user_ref.get().exists:
-            user_ref.set({
-                'email': email,
-                'name': user.display_name or email.split('@')[0],
-                'created_at': datetime.utcnow(),
-                'status': 'active'
-            })
-
         # 6. Respuesta exitosa
         return jsonify({
             "success": True,
