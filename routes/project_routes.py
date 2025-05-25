@@ -5,7 +5,7 @@ from utils import firbase
 from flask_cors import CORS
 from flask_cors import cross_origin
 from datetime import datetime
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from utils.cloudinary_bd import cloudinary 
 
 app = Flask(__name__)
 CORS(app)
@@ -36,7 +36,7 @@ def crear_proyecto():
         data = request.get_json()
         
         # Validar datos requeridos
-        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator']
+        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator','photo']
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
@@ -70,7 +70,8 @@ def crear_proyecto():
             "updates": data.get("updates", []),
             "supporters": [],
             "status": "pending",
-            "createdAt": datetime.now().isoformat()
+            "createdAt": datetime.now().isoformat(),
+            "photo": cloudinary.subir_a_cloudinary(data["photo"])
         }
         
         doc_ref.set(project_data)
