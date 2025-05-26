@@ -9,7 +9,7 @@ import os
 from utils.Validations import AuthValidations
 
 app = Flask(__name__)
-login_bp = Blueprint('login', __name__)
+login_bp = Blueprint('login_bp', __name__)
 CORS(login_bp, supports_credentials=True)
 
 # Configuración de Firebase
@@ -75,6 +75,14 @@ def login():
                 "code": "wrong_credentials"
             }), 401
 
+        # # 🔐 Validar si el correo está verificado
+        # if not auth_data.get("emailVerified"):
+        #     return jsonify({
+        #         "success": False,
+        #         "message": "Debes verificar tu correo electrónico antes de iniciar sesión",
+        #         "code": "email_not_verified"
+        #     }), 403
+        
         # 5. Verificar/crear perfil en Firestore
         uid = auth_data["localId"]
         user_ref = db.collection('users').document(uid)

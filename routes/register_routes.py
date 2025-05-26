@@ -8,31 +8,29 @@ register_bp = Blueprint('register_bp', __name__)
 @register_bp.route('', methods=['POST'])
 def register_user():
     try:
-        # 1. Validar formato del request (común)
         if error := AuthValidations.validate_request(request):
             return error
 
         data = request.get_json()
-        
-        # 2. Validar datos específicos de registro (nueva validación)
         if error := AuthValidations.validate_registration_data(data):
             return error
 
-        # 3. Extraer datos
         name = data.get('name', '').strip()
         email = data.get('email', '').strip().lower()
-        password = data.get('password', '').strip()
 
-        # 4. Crear usuario en Firebase
-        user = auth.create_user(
-            email=email,
-            password=password,
-            display_name=name,
-            email_verified=False
-        )
+        # Verificar si el correo ya existe en Firestore (opcional)
+        db = firestore.client()
+        existing = db.collection('users').where('email', '==', email).get()
+        if existing:
+            return jsonify({
+                "success": False,
+                "message": "El correo ya está registrado"
+            }), 409
 
-        # Resto del código de registro...
-        # ... (mantener tu lógica existente de Firestore y respuesta)
+        return jsonify({
+            "success": True,
+            "message": "Validación exitosa, continúa en el cliente"
+        }), 200
 
     except auth.EmailAlreadyExistsError:
         return jsonify({
