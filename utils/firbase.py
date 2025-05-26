@@ -12,7 +12,9 @@ PERMISSIONS = {
         'actualizar_usuario': True,
         'eliminar_usuario': True,
         'obtener_usuario': True,
-        'administrar_sistema': True
+        'administrar_sistema': True,
+        'eliminar_Proyecto': True,
+        'actualizar_proyecto': True
     },
     'usuario': {
         'listar_usuarios': False,
@@ -20,7 +22,9 @@ PERMISSIONS = {
         'actualizar_usuario': False,  # Solo puede actualizar su propio perfil
         'eliminar_usuario': False,
         'obtener_usuario': True,     # Solo puede obtener su propio perfil
-        'administrar_sistema': False
+        'administrar_sistema': False,
+        'eliminar_Proyecto': True,
+        'actualizar_proyecto': True
     }
 }
 

@@ -76,8 +76,6 @@ def obtener_usuario(id):
         return jsonify({"error": str(e)}), 500
     
 
-
-
 @user_bp.route('/eliminarUsuario/<string:id>', methods=['DELETE'])
 @firebase_auth_required('eliminar_usuario')
 def eliminar_usuario(id):
@@ -88,3 +86,31 @@ def eliminar_usuario(id):
 
     doc_ref.delete()
     return jsonify({"mensaje": "Usuario eliminado"}), 200
+
+
+
+@user_bp.route('/listarUsuariosRole/<string:role>', methods=['GET'])
+def obtener_usuarios_role(role):
+    try:
+        usuarios = filtro_usuarios('role', role)
+        return jsonify(usuarios), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+   
+@user_bp.route('/listarUsuariosStatus/<string:status>', methods=['GET'])
+def obtener_usuarios_status(status):
+    try:
+        usuarios = filtro_usuarios('status', status)
+        return jsonify(usuarios), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def filtro_usuarios(campo, valor):
+    usuarios_ref = colection_ref.stream()
+    usuarios = []
+    for doc in usuarios_ref:
+        usuario = doc.to_dict()
+        usuario["id"] = doc.id
+        if usuario.get(campo) == valor:
+            usuarios.append(usuario)
+    return usuarios

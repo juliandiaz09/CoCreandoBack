@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_cors import cross_origin
 from datetime import datetime
 from utils.cloudinary_bd import cloudinary 
+from utils.firbase import firebase_auth_required
 
 app = Flask(__name__)
 CORS(app)
@@ -13,7 +14,6 @@ CORS(app)
 project_bp = Blueprint('project_bp', __name__)  # nombre e identificador
 
 colection_ref = firbase.db.collection('proyectos')
-
 
 @project_bp.route('/listarProyectos', methods=['GET'])
 @cross_origin(supports_credentials=True)
@@ -86,7 +86,7 @@ def crear_proyecto():
         return jsonify({"error": str(e)}), 500
 
 @project_bp.route('/actualizarProyecto/<string:id>', methods=['PUT'])
-# #@jwt_required()
+@firebase_auth_required('actualizar_proyecto')
 def actualizar_proyecto(id):
     data = request.get_json()
     doc_ref = colection_ref.document(id)
@@ -106,7 +106,50 @@ def obtener_proyecto(id):
     else:
         return jsonify({"mensaje": "Proyecto no encontrado"}), 404
 
+@project_bp.route('/listarProyectosCategoria/<string:categoria>', methods=['GET'])
+def obtener_proyectos_categoria(categoria):
+    try:
+        proyectos = filtro_proyectos('category', categoria)
+        return jsonify(proyectos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+   
+@project_bp.route('/listarProyectosStatus/<string:status>', methods=['GET'])
+def obtener_proyecto_status(status):
+    try:
+        proyectos = filtro_proyectos('status', status)
+        return jsonify(proyectos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@project_bp.route('/listarProyectosLocation/<string:location>', methods=['GET'])
+def obtener_proyecto_location(location):
+    try:
+        proyectos = filtro_proyectos('location', location)
+        return jsonify(proyectos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@project_bp.route('/listarProyectosCreator/<string:creator>', methods=['GET'])
+def obtener_proyecto_creator(creator):
+    try:
+        proyectos = filtro_proyectos('creator', creator)
+        return jsonify(proyectos), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def filtro_proyectos(campo, valor):
+    proyectos_ref = colection_ref.stream()
+    proyectos = []
+    for doc in proyectos_ref:
+        proyecto = doc.to_dict()
+        proyecto["id"] = doc.id
+        if proyecto.get(campo) == valor:
+            proyectos.append(proyecto)
+    return proyectos
+
 @project_bp.route('/eliminarProyecto/<string:id>', methods=['DELETE'])
+@firebase_auth_required('eliminar_Proyecto')
 def eliminar_proyecto(id):
     doc_ref = colection_ref.document(id)
     if not doc_ref.get().exists:
