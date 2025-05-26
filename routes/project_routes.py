@@ -36,15 +36,11 @@ def crear_proyecto():
         data = request.get_json()
         
         # Validar datos requeridos
-        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator','photo']
+        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator','photos']
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
-        
-        # Crear documento en Firestore
-        doc_ref = colection_ref.document()
-        project_id = doc_ref.id
-        
+                
          # Convertir la fecha deadline a formato ISO si es una cadena
         deadline = data["deadline"]
         if isinstance(deadline, str):
@@ -52,6 +48,16 @@ def crear_proyecto():
                 deadline = datetime.fromisoformat(deadline).isoformat()
             except ValueError:
                 return jsonify({"error": "Formato de fecha inválido"}), 400
+            
+        # Subir múltiples imágenes
+        urls_fotos = []
+        for foto_base64 in data["photos"]:
+            url = cloudinary.subir_a_cloudinary(foto_base64)
+            urls_fotos.append(url)
+
+                # Crear documento en Firestore
+        doc_ref = colection_ref.document()
+        project_id = doc_ref.id
             
         # Estructurar datos del proyecto
         project_data = {
@@ -71,7 +77,7 @@ def crear_proyecto():
             "supporters": [],
             "status": "pending",
             "createdAt": datetime.now().isoformat(),
-            "photo": cloudinary.subir_a_cloudinary(data["photo"])
+            "photos": urls_fotos  # Guarda las URLs
         }
         
         doc_ref.set(project_data)
