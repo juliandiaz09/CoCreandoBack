@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from services.payment_service import generar_formulario_pago
 from utils import firbase
-
+from firebase_admin import firestore
 
 payment_bp = Blueprint('payment_bp', __name__)
+db = firestore.client()
 
 #@payment_bp.route('/procesar-pago', methods=['POST'])
 #def procesar_pago():
@@ -26,32 +27,54 @@ def crear_pago():
     return html_form  # esto genera y devuelve el formulario HTML que redirige a PayU
 
 
-@payment_bp.route('/confirmacion-pago', methods=['POST'])
+@payment_bp.route('/api/pagos/respuesta', methods=['GET'])
 def confirmacion_pago():
-    data = request.form.to_dict()
-    
-    # Solo procesamos pagos aprobados
-    estado = data.get("state_pol")
-    if estado != "4":  # "4" significa pago aprobado en PayU
-        return jsonify({"mensaje": "Pago no aprobado"}), 200
+    data = request.args.to_dict()
+    print("Datos de redirección (GET):", data)
 
-    # Obtenemos valores necesarios del callback de PayU
-    valor_pagado = float(data.get("value", 0))
-    referencia_venta = data.get("reference_sale")  # aquí deberías haber guardado el ID del proyecto
+    if data.get("transactionState") != "4" and data.get("polTransactionState") != "4":
+        return """
+            <h2>Transacción Rechazada</h2>
+            <a href="/">Volver a la página principal</a>
+        """, 200
 
-    if not referencia_venta:
-        return jsonify({"error": "Referencia de venta faltante"}), 400
+    try:
+        referencia = data.get("referenceCode")
+        id_proyecto = referencia.split("_")[1]
+        valor = float(data.get("TX_VALUE"))
+        email = data.get("buyerEmail")
 
-    # Buscar proyecto por ID y sumar fondos
-    doc_ref = firbase.db.collection("proyectos").document(referencia_venta)
-    doc = doc_ref.get()
-    if not doc.exists:
-        return jsonify({"error": "Proyecto no encontrado"}), 404
+        # Actualizar proyecto
+        db.collection("proyectos").document(id_proyecto).update({
+            "collected": firestore.Increment(valor)
+        })
 
-    proyecto = doc.to_dict()
-    recaudado_actual = float(proyecto.get("fondos_recaudados", 0))
-    nuevo_monto = recaudado_actual + valor_pagado
+        # Buscar usuario por email
+        usuarios_ref = db.collection("users")
+        query = usuarios_ref.where("email", "==", email).limit(1).get()
 
-    doc_ref.update({"fondos_recaudados": nuevo_monto})
+        if not query:
+            return "<h2>Usuario no encontrado</h2>", 404
 
-    return jsonify({"mensaje": "Fondo actualizado exitosamente"}), 200
+        user_doc_id = query[0].id
+
+        # Actualizar pagos del usuario
+        db.collection("users").document(user_doc_id).update({
+            "pagos": firestore.ArrayUnion([{
+                "id_proyecto": id_proyecto,
+                "valor": valor,
+                "transaction_id": data.get("transactionId"),
+                "authorization_code": data.get("authorizationCode"),
+                "payment_method": data.get("lapPaymentMethod"),
+                "currency": data.get("currency"),
+            }])
+        })
+
+        html_response = """
+        <h2>¡Transacción Exitosa!</h2>
+        """
+        return html_response, 200
+
+    except Exception as e:
+        print("Error al procesar pago:", str(e))
+        return f"<h2>Error al procesar el pago: {str(e)}</h2>", 500

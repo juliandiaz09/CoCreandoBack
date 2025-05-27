@@ -29,8 +29,8 @@ def generar_formulario_pago(id_proyecto, descripcion, valor, email_cliente):
       <input name="currency"      type="hidden"  value="{CURRENCY}">
       <input name="signature"     type="hidden"  value="{signature}">
       <input name="buyerEmail"    type="hidden"  value="{email_cliente}">
-      <input name="responseUrl"   type="hidden"  value="http://localhost:5000/api/pagos/respuesta">
-      <input name="confirmationUrl" type="hidden" value="http://localhost:5000/api/pagos/confirmacion-pago">
+      <input name="responseUrl"   type="hidden"  value="http://localhost:5000/pasarela/api/pagos/respuesta">
+      <input name="confirmationUrl" type="hidden" value="http://localhost:5000/pasarela/api/pagos/confirmacion-pago">
       <input name="test"          type="hidden"  value="1">
       <input name="Submit"        type="submit"  value="Pagar con PayU">
     </form>
