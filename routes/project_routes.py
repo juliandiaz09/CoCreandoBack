@@ -58,7 +58,7 @@ def crear_proyecto():
                 # Crear documento en Firestore
         doc_ref = colection_ref.document()
         project_id = doc_ref.id
-            
+        
         # Estructurar datos del proyecto
         project_data = {
             "id": project_id,
@@ -164,3 +164,10 @@ def eliminar_proyecto(id):
 
     doc_ref.delete()
     return jsonify({"mensaje": "Proyecto eliminado exitosamente"}), 200
+
+def obtener_datos_proyecto(id):
+    doc = colection_ref.document(id).get()
+    if doc.exists:
+        return doc.to_dict()
+    else:
+        return None

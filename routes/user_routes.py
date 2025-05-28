@@ -43,7 +43,7 @@ def actualizar_usuarios(id):
 
 #UNICA FUNCIÓN EJECUTADA EN ESTE COMMIT - USO DE DECORADOR FUNCIONALIDAD - AÚN NO SE ESTABLECEN ROLES
 @user_bp.route('/obtenerUsuario/<string:id>', methods=['GET'])
-@firebase_auth_required('obtener_usuario')
+#@firebase_auth_required('obtener_usuario')
 def obtener_usuario(id):
     try:
         # Obtener referencia al documento del usuario
@@ -114,3 +114,10 @@ def filtro_usuarios(campo, valor):
         if usuario.get(campo) == valor:
             usuarios.append(usuario)
     return usuarios
+
+def obtener_datos_usuarios(id):
+    doc = colection_ref.document(id).get()
+    if doc.exists:
+        return doc.to_dict()
+    else:
+        return None

@@ -3,15 +3,19 @@ from flask import Flask
 from flask_cors import CORS
 from routes.login_routes import login_bp
 from routes.register_routes import register_bp
-from routes.project_routes import project_bp
+from routes.project_routes import project_bp, obtener_datos_proyecto
 from routes.payment_routes import payment_bp
 from routes.user_routes import user_bp
-from socketio_app import socketio, init_socketio  # 👈 importa lo necesario
+#from socketio_app import socketio, init_socketio  # 👈 importa lo necesario
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from sockets.notifications_socket import emitir_notificacion, init_socketio, socketio
 
 app = Flask(__name__)
 
 # CORS global (solo para pruebas locales, en producción usa origen específico)
 CORS(app, supports_credentials=True)
+
 
 # Registro del blueprint en /login
 app.register_blueprint(login_bp, url_prefix='/login')

@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from services.payment_service import generar_formulario_pago
 from utils import firbase
 from firebase_admin import firestore
+from routes.project_routes import obtener_datos_proyecto
+from sockets.notifications_socket import emitir_notificacion
 
 payment_bp = Blueprint('payment_bp', __name__)
 db = firestore.client()
@@ -73,7 +75,21 @@ def confirmacion_pago():
         html_response = """
         <h2>¡Transacción Exitosa!</h2>
         """
-        return html_response, 200
+        aportante_doc = query[0].to_dict()
+        nombre_aportante = aportante_doc.get("name", "Un usuario")
+
+        proyecto = obtener_datos_proyecto(id_proyecto)
+        if proyecto:
+            uid_creator = proyecto.get("creator", {}).get("uid")
+
+        mensaje = f"Hola, {nombre_aportante} ha realizado un aporte de ${valor:.2f} a tu proyecto."
+
+        emitir_notificacion(
+            uid_creator,
+            "Aporte al proyecto",
+            "Se ha realizado un aporte al proyecto",
+            mensaje
+        )
 
     except Exception as e:
         print("Error al procesar pago:", str(e))

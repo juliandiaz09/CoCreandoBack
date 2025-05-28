@@ -8,6 +8,8 @@ register_bp = Blueprint('register_bp', __name__)
 @register_bp.route('', methods=['POST'])
 def register_user():
     try:
+        data = request.get_json()
+
         if error := AuthValidations.validate_request(request):
             return error
 
@@ -26,6 +28,7 @@ def register_user():
                 "success": False,
                 "message": "El correo ya está registrado"
             }), 409
+            
 
         return jsonify({
             "success": True,

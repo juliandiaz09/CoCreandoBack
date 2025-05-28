@@ -3,7 +3,8 @@ from flask_socketio import SocketIO, emit, join_room
 from firebase_admin import firestore
 import uuid
 from datetime import datetime
-from models.notification import Notification
+from models.notification.Notification import Notificacion
+from flask_socketio import SocketIO
 
 socketio = SocketIO(cors_allowed_origins="*")
 db = firestore.client()
@@ -16,7 +17,7 @@ def handle_join(data):
 
 def emitir_notificacion(user_id, tipo, titulo, mensaje):
     """Guarda una notificación en Firestore y la emite al cliente en tiempo real"""
-    noti = Notification(user_id, tipo, titulo, mensaje)
+    noti = Notificacion(user_id, tipo, titulo, mensaje)
     db.collection("notifications").document(user_id)\
     .collection("user_notifications").document(noti.id).set(noti.to_dict())
 
@@ -52,3 +53,6 @@ def marcar_como_leidas(data):
 
     emit('notificaciones_actualizadas', updated, room=user_id)
 
+
+def init_socketio(app):
+    socketio.init_app(app)
