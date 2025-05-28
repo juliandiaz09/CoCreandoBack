@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from models.user import User
 from utils import firbase, firebase_auth_required
 from flask_cors import CORS
+from utils.firbase import get_current_user
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:4200"}}, supports_credentials=True)
