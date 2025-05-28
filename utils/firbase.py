@@ -46,14 +46,12 @@ def firebase_auth_required(permission=None):
             if request.method == 'OPTIONS':
                 return '', 200
             
-
             auth_header = request.headers.get('Authorization')
 
             if not auth_header or not auth_header.startswith('Bearer '):
                 return jsonify({"error": "Token no proporcionado"}), 401
 
             id_token = auth_header.split('Bearer ')[1].strip()
-
 
             try:
                 # Verifica token con Firebase
@@ -85,6 +83,26 @@ def firebase_auth_required(permission=None):
                 return jsonify({"error": f"Error de autenticación: {str(e)}"}), 401
 
         return decorated_function
-    return decorator
+    return decorator  # <-- Esta línea faltaba
+
+def get_current_user():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return None
+    
+    token = auth_header.split('Bearer ')[1]
+    try:
+        decoded_token = auth.verify_id_token(token)
+        user = auth.get_user(decoded_token['uid'])
+        user_data = colection_ref.document(user.uid).get().to_dict()
+        return {
+            'uid': user.uid,
+            'email': user.email,
+            'rol': user_data.get('rol', 'usuario'),
+            'name': user_data.get('name', '')
+        }
+    except Exception as e:
+        print(f"Error getting current user: {str(e)}")
+        return None
 
 print("Firebase inicializado correctamente.")

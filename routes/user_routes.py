@@ -34,11 +34,20 @@ def crear_usuario():
 def actualizar_usuarios(id):
     data = request.get_json()
     
+    # Verificar si el usuario que hace la petición es admin
+    current_user = get_current_user()  # Necesitarías implementar esta función
+    if current_user.get('rol') != 'admin':
+        return jsonify({"error": "No autorizado"}), 403
+    
     doc_ref = colection_ref.document(id)
     if not doc_ref.get().exists:
         return jsonify({"error": "No encontrado"}), 404
 
-    doc_ref.update(data)
+    # Solo permitir actualizar ciertos campos
+    allowed_fields = ['rol', 'status', 'name', 'email_verified']
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+    
+    doc_ref.update(update_data)
     return jsonify({"mensaje": "Usuario actualizado"}), 200
 
 #UNICA FUNCIÓN EJECUTADA EN ESTE COMMIT - USO DE DECORADOR FUNCIONALIDAD - AÚN NO SE ESTABLECEN ROLES
