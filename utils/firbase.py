@@ -38,7 +38,6 @@ if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-
 def firebase_auth_required(permission=None):
     def decorator(f):
         @wraps(f)
@@ -63,7 +62,10 @@ def firebase_auth_required(permission=None):
                     return jsonify({"error": "Usuario no registrado"}), 404
 
                 user_data = user_doc.to_dict()
-                user_role = user_data.get('rol')
+                user_role = user_data.get('rol', 'usuario')
+                
+                if user_role not in PERMISSIONS:
+                    return jsonify({"error": "Rol de usuario no válido"}), 403
 
                 request.user = {
                     'uid': uid,
@@ -73,17 +75,22 @@ def firebase_auth_required(permission=None):
 
                 # Verificación de permisos
                 if permission:
-                    role_permissions = PERMISSIONS[user_role]
-                    if not role_permissions.get(permission, False):
+                    if not PERMISSIONS[user_role].get(permission, False):
                         return jsonify({"error": f"Permiso denegado para la acción '{permission}'"}), 403
 
                 return f(*args, **kwargs)
 
+            except auth.InvalidIdTokenError:
+                return jsonify({"error": "Token de Firebase inválido"}), 401
+            except auth.ExpiredIdTokenError:
+                return jsonify({"error": "Token de Firebase expirado"}), 401
+            except auth.RevokedIdTokenError:
+                return jsonify({"error": "Token de Firebase revocado"}), 401
             except Exception as e:
                 return jsonify({"error": f"Error de autenticación: {str(e)}"}), 401
 
         return decorated_function
-    return decorator  # <-- Esta línea faltaba
+    return decorator
 
 def get_current_user():
     auth_header = request.headers.get('Authorization')
@@ -93,13 +100,14 @@ def get_current_user():
     token = auth_header.split('Bearer ')[1]
     try:
         decoded_token = auth.verify_id_token(token)
-        user = auth.get_user(decoded_token['uid'])
-        user_data = colection_ref.document(user.uid).get().to_dict()
+        user_doc = db.collection('users').document(decoded_token['uid']).get()
+        if not user_doc.exists:
+            return None
+            
         return {
-            'uid': user.uid,
-            'email': user.email,
-            'rol': user_data.get('rol', 'usuario'),
-            'name': user_data.get('name', '')
+            'uid': decoded_token['uid'],
+            'email': decoded_token.get('email'),
+            **user_doc.to_dict()
         }
     except Exception as e:
         print(f"Error getting current user: {str(e)}")
