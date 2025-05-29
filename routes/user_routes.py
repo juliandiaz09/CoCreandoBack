@@ -16,9 +16,21 @@ colection_ref = firbase.db.collection('users')
 @user_bp.route('/listarUsuarios', methods=['GET'])
 @firebase_auth_required('listar_usuarios')
 def listar_usuarios():
-    usuarios_ref = colection_ref.stream()
-    usuarios = [doc.to_dict() for doc in usuarios_ref]
-    return jsonify(usuarios), 200
+    try:
+        # Verificar si el usuario es administrador
+        current_user = get_current_user()
+        if current_user.get('rol') != 'admin':
+            return jsonify({"error": "No autorizado"}), 403
+
+        usuarios_ref = colection_ref.stream()
+        usuarios = []
+        for doc in usuarios_ref:
+            user_data = doc.to_dict()
+            user_data["id"] = doc.id
+            usuarios.append(user_data)
+        return jsonify(usuarios), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @user_bp.route('/crearUsuario', methods=['POST'])
 @firebase_auth_required('crear_usuario')
