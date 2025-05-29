@@ -17,19 +17,26 @@ colection_ref = firbase.db.collection('users')
 @firebase_auth_required('listar_usuarios')
 def listar_usuarios():
     try:
-        # Verificar si el usuario es administrador
+        # Obtener el usuario actual desde el contexto de g
         current_user = get_current_user()
-        if current_user.get('rol') != 'admin':
+        print(f"Usuario actual: {current_user}")  # Log para depuración
+        
+        # Verificar si el usuario es administrador
+        if current_user.get('role') != 'admin':
+            print("Usuario no es admin")  # Log para depuración
             return jsonify({"error": "No autorizado"}), 403
 
         usuarios_ref = colection_ref.stream()
         usuarios = []
         for doc in usuarios_ref:
             user_data = doc.to_dict()
-            user_data["id"] = doc.id
+            user_data["id"] = doc.id  # Asegurar que el ID está incluido
             usuarios.append(user_data)
+        
+        print(f"Usuarios encontrados: {len(usuarios)}")  # Log para depuración
         return jsonify(usuarios), 200
     except Exception as e:
+        print(f"Error en listar_usuarios: {str(e)}")  # Log detallado
         return jsonify({"error": str(e)}), 500
 
 @user_bp.route('/crearUsuario', methods=['POST'])
@@ -49,7 +56,7 @@ def actualizar_usuarios(id):
     
     # Verificar si el usuario que hace la petición es admin
     current_user = get_current_user()  # Necesitarías implementar esta función
-    if current_user.get('rol') != 'admin':
+    if current_user.get('role') != 'admin':
         return jsonify({"error": "No autorizado"}), 403
     
     doc_ref = colection_ref.document(id)
@@ -57,7 +64,7 @@ def actualizar_usuarios(id):
         return jsonify({"error": "No encontrado"}), 404
 
     # Solo permitir actualizar ciertos campos
-    allowed_fields = ['rol', 'status', 'name', 'email_verified']
+    allowed_fields = ['role', 'status', 'name', 'email_verified']
     update_data = {k: v for k, v in data.items() if k in allowed_fields}
     
     doc_ref.update(update_data)
@@ -86,7 +93,7 @@ def obtener_usuario(id):
         #             'email': user_record.email,
         #             'email_verified': user_record.email_verified,
         #             'name': user_record.display_name or user_record.email.split('@')[0],
-        #             'rol': 'usuario',  # Valor por defecto
+        #             'role': 'usuario',  # Valor por defecto
         #             'status': 'active',  # Valor por defecto
         #             'login_count': 0  # Valor por defecto
         #         }
@@ -98,7 +105,7 @@ def obtener_usuario(id):
         user_data = doc.to_dict()
         # Asegurarse de que el campo de rol esté presente
         if 'rol' not in user_data:
-            user_data['rol'] = 'usuario'  # Valor por defecto
+            user_data['role'] = 'usuario'  # Valor por defecto
             
         return jsonify(user_data), 200
     except Exception as e:

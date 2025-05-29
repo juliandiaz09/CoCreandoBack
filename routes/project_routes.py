@@ -101,7 +101,7 @@ def actualizar_proyecto(id):
     current_user = get_current_user()
     project = colection_ref.document(id).get().to_dict()
     
-    if current_user.get('rol') != 'admin' and current_user.get('uid') != project.get('creator'):
+    if current_user.get('role') != 'admin' and current_user.get('uid') != project.get('creator'):
         return jsonify({"error": "No autorizado"}), 403
     
     doc_ref = colection_ref.document(id)

@@ -1,8 +1,9 @@
 import os
 from functools import wraps
-from flask import Flask, request, jsonify
+from flask import Flask, g, request, jsonify
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
+
 
 # Definición de permisos
 PERMISSIONS = {
@@ -62,7 +63,7 @@ def firebase_auth_required(permission=None):
                     return jsonify({"error": "Usuario no registrado"}), 404
 
                 user_data = user_doc.to_dict()
-                user_role = user_data.get('rol', 'usuario')
+                user_role = user_data.get('role', 'usuario')
                 
                 if user_role not in PERMISSIONS:
                     return jsonify({"error": "Rol de usuario no válido"}), 403
