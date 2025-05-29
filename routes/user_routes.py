@@ -59,6 +59,9 @@ def obtener_usuario(id):
         # Obtener referencia al documento del usuario
         doc_ref = colection_ref.document(id)
         doc = doc_ref.get()
+        if not doc.exists:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+        
         
         #Esto para nada es FUNCIONAL
         # if not doc.exists:
@@ -80,9 +83,13 @@ def obtener_usuario(id):
         #     except Exception as auth_error:
         #         return jsonify({"error": "Usuario no encontrado"}), 404
         
-        return jsonify(doc.to_dict()), 200
+        user_data = doc.to_dict()
+        # Asegurarse de que el campo de rol esté presente
+        if 'rol' not in user_data:
+            user_data['rol'] = 'usuario'  # Valor por defecto
+            
+        return jsonify(user_data), 200
     except Exception as e:
-        print(f"Error al obtener usuario: {str(e)}")
         return jsonify({"error": str(e)}), 500
     
 

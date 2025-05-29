@@ -6,7 +6,7 @@ from firebase_admin import credentials, firestore, auth
 
 # Definición de permisos
 PERMISSIONS = {
-    'administrador': {
+    'admin': {
         'listar_usuarios': True,
         'crear_usuario': True,
         'actualizar_usuario': True,
