@@ -175,6 +175,34 @@ def eliminar_proyecto(id):
     doc_ref.delete()
     return jsonify({"mensaje": "Proyecto eliminado exitosamente"}), 200
 
+@project_bp.route('/aprobarProyecto/<string:id>', methods=['PUT'])
+@firebase_auth_required('administrar_sistema')
+def aprobar_proyecto(id):
+    try:
+        doc_ref = colection_ref.document(id)
+        if not doc_ref.get().exists:
+            return jsonify({"error": "Proyecto no encontrado"}), 404
+            
+        doc_ref.update({"status": "approved"})
+        return jsonify({"mensaje": "Proyecto aprobado exitosamente"}), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@project_bp.route('/rechazarProyecto/<string:id>', methods=['PUT'])
+@firebase_auth_required('administrar_sistema')
+def rechazar_proyecto(id):
+    try:
+        doc_ref = colection_ref.document(id)
+        if not doc_ref.get().exists:
+            return jsonify({"error": "Proyecto no encontrado"}), 404
+            
+        doc_ref.update({"status": "rejected"})
+        return jsonify({"mensaje": "Proyecto rechazado exitosamente"}), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 def obtener_datos_proyecto(id):
     doc = colection_ref.document(id).get()
     if doc.exists:
