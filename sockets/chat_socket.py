@@ -3,6 +3,7 @@ from flask_socketio import emit, join_room
 from firebase_admin import firestore
 from datetime import datetime
 from utils.chat import obtener_chat_id
+from sockets.notifications_socket import socketio  # Importa el mismo objeto socketio
 import uuid
 
 db = firestore.client()

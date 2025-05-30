@@ -9,7 +9,9 @@ from routes.user_routes import user_bp
 #from socketio_app import socketio, init_socketio  # 👈 importa lo necesario
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from sockets.notifications_socket import emitir_notificacion, init_socketio, socketio
+from sockets.notifications_socket import init_socketio, socketio
+import sockets.chat_socket  # 👈 importa el módulo para que registre sus eventos
+
 
 app = Flask(__name__)
 
