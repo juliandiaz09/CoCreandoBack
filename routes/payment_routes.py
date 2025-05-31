@@ -90,7 +90,7 @@ def confirmacion_pago():
             "Se ha realizado un aporte al proyecto",
             mensaje
         )
-
+        return html_response, 200
     except Exception as e:
         print("Error al procesar pago:", str(e))
         return f"<h2>Error al procesar el pago: {str(e)}</h2>", 500
