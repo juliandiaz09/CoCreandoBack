@@ -30,4 +30,11 @@ init_socketio(app)
 
 # Ejecuta con socketio.run para permitir WebSocket
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+    # Para Render (con advertencia desactivada)
+    socketio.run(
+        app, 
+        host='0.0.0.0', 
+        port=int(os.environ.get('PORT', 5000)),
+        debug=False,
+        allow_unsafe_werkzeug=True  # Desactiva la protección
+    )

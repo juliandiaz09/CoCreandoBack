@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_cors import cross_origin
 from datetime import datetime
 from utils.cloudinary_bd import cloudinary 
-from utils.firbase import firebase_auth_required
+from utils.firbase import firebase_auth_required, get_current_user
 
 app = Flask(__name__)
 CORS(app)
