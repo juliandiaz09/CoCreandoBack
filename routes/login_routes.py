@@ -12,10 +12,8 @@ app = Flask(__name__)
 login_bp = Blueprint('login_bp', __name__)
 CORS(login_bp, supports_credentials=True)
 
-# Configuración de Firebase
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(BASE_DIR, 'cocreando.json')
-cred = credentials.Certificate(cred_path)
+
+cred = credentials.Certificate("/etc/secrets/cocreando.json")
 
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
@@ -23,8 +21,8 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 def firebase_login(email, password):
-    API_KEY = "AIzaSyDnCfzF5psHLcnmbeJGrBuWpxOkUp01Lfo"
-    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
+    FIREBASE_API_KEY = os.environ.get('API_KEY_F')
+    url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
 
     payload = {
         "email": email,

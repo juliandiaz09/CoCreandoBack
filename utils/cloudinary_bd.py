@@ -1,13 +1,14 @@
 import cloudinary
 import cloudinary.uploader
 from cloudinary.utils import cloudinary_url
+import os
 
 # Configuration       
 cloudinary.config( 
-    cloud_name = "dtg8i6j9f", 
-    api_key = "879614286768322", 
-    api_secret = "n-ABqaA4p1TFHJAD-adFRvFdd1g", # Click 'View API Keys' above to copy your API secret
-    secure=True
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET'),
+    secure = True
 )
 
 def subir_a_cloudinary(ruta_archivo):
