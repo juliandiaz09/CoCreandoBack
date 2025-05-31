@@ -6,11 +6,10 @@ from routes.register_routes import register_bp
 from routes.project_routes import project_bp, obtener_datos_proyecto
 from routes.payment_routes import payment_bp
 from routes.user_routes import user_bp
-#from socketio_app import socketio, init_socketio  # 👈 importa lo necesario
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sockets.notifications_socket import init_socketio, socketio
-
+import os
 
 app = Flask(__name__)
 
