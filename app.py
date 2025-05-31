@@ -10,7 +10,6 @@ from routes.user_routes import user_bp
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from sockets.notifications_socket import init_socketio, socketio
-import sockets.chat_socket  # 👈 importa el módulo para que registre sus eventos
 
 
 app = Flask(__name__)
