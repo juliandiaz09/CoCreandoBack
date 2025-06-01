@@ -29,22 +29,22 @@ init_socketio(app)
 
 @app.route('/conexiones-activas')
 def conexiones_activas():
-    try:
-        # Accede directamente al manager de Socket.IO
-        manager = socketio.server.manager
-        return jsonify({
-            "total_connections": len(manager.rooms.get('/', {})),
-            "namespaces": list(manager.rooms.keys()),
-            "room_details": {
-                room: len(sids) for room, sids in manager.rooms.items() if room != '/'
-            },
-            "debug_info": {
-                "engineio_version": getattr(socketio.server.eio, "engineio_version", None),
-                "active_sockets": list(manager.rooms.get('/', {}).keys())
+    manager = socketio.server.manager
+    return jsonify({
+        "detalle_conexiones": [
+            {
+                "socket_id": sid,
+                "user_id": manager.environ[sid].get('user_id', None) if sid in manager.environ else None,
+                "ip": manager.environ[sid]['REMOTE_ADDR'] if sid in manager.environ else None
             }
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            for sid in manager.rooms.get('/', []) if sid
+        ],
+        "salas_activas": {
+            room: list(sids) 
+            for room, sids in manager.rooms.items() 
+            if room != '/'
+        }
+    })
 
 # Ejecuta con socketio.run para permitir WebSocket
 if __name__ == '__main__':
