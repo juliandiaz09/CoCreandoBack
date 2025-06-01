@@ -27,6 +27,13 @@ app.register_blueprint(user_bp, url_prefix='/usuario')
 # 👇 Inicializa socketio con Flask
 init_socketio(app)
 
+@payment_bp.route('/conexiones-activas')  # 👈 Nueva ruta
+def listar_conexiones():
+    return jsonify({
+        "rooms": socketio.server.manager.rooms,
+        "clients_count": len(socketio.server.manager.get_participants('/', None))
+    })
+
 # Ejecuta con socketio.run para permitir WebSocket
 if __name__ == '__main__':
     # Para Render (con advertencia desactivada)
