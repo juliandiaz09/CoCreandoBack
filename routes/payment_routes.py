@@ -82,16 +82,14 @@ def confirmacion_pago():
         if proyecto:
             uid_creator = proyecto.get("creator", {}).get("uid")
 
-         # Verificar que el creador no es el mismo que el aportante
-        if uid_creator != user_doc_id:
-            mensaje = f"Hola, {nombre_aportante} ha realizado un aporte de ${valor:.2f} a tu proyecto."
-            
-            emitir_notificacion(
-                uid_creator,  # Solo al dueño del proyecto
-                "Aporte al proyecto",
-                "Se ha realizado un aporte al proyecto",
-                mensaje
-            )
+        mensaje = f"Hola, {nombre_aportante} ha realizado un aporte de ${valor:.2f} a tu proyecto."
+        
+        emitir_notificacion(
+            uid_creator,  # Solo al dueño del proyecto
+            "Aporte al proyecto",
+            "Se ha realizado un aporte al proyecto",
+            mensaje
+        )
         return html_response, 200
     except Exception as e:
         print("Error al procesar pago:", str(e))
