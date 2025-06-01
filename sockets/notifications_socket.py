@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from models.notification.Notification import Notificacion
 from flask_socketio import SocketIO
+import request
 
 socketio = SocketIO(cors_allowed_origins="*")
 db = firestore.client()
@@ -13,7 +14,11 @@ db = firestore.client()
 def handle_join(data):
     user_id = data.get("user_id")
     join_room(user_id)
-    print(f"✅ Usuario {user_id} se unió a su sala de notificaciones")
+    print(f"✅ Usuario {user_id} se unió a la sala. ID de sesión: {request.sid}")
+    emit('confirmacion_join', {
+        'room': user_id,
+        'socket_id': request.sid
+    }, room=request.sid)  # Solo al cliente que se unió
 
 def emitir_notificacion(user_id, tipo, titulo, mensaje):
     """Guarda una notificación en Firestore y la emite al cliente en tiempo real"""
