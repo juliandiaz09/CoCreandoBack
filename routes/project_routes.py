@@ -36,7 +36,7 @@ def crear_proyecto():
         data = request.get_json()
         
         # Validar datos requeridos
-        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator', 'file', 'photos']
+        required_fields = ['title', 'description', 'goal', 'category', 'deadline', 'creator']
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
@@ -49,11 +49,11 @@ def crear_proyecto():
             except ValueError:
                 return jsonify({"error": "Formato de fecha inválido"}), 400
             
-        # Subir múltiples imágenes
-        urls_fotos = []
-        for foto_base64 in data["photos"]:
-            url = cloudinary.subir_a_cloudinary(foto_base64)
-            urls_fotos.append(url)
+        # # Subir múltiples imágenes
+        # urls_fotos = []
+        # for foto_base64 in data["photos"]:
+        #     url = cloudinary.subir_a_cloudinary(foto_base64)
+        #     urls_fotos.append(url)
 
                 # Crear documento en Firestore
         doc_ref = colection_ref.document()
@@ -76,9 +76,9 @@ def crear_proyecto():
             "updates": data.get("updates", []),
             "supporters": [],
             "status": "pending",
-            "createdAt": datetime.now().isoformat(),
-            "file": cloudinary.subir_a_cloudinary(data['file']), # Esto es requerido
-            "photos": urls_fotos  # Guarda las URLs #Esto tambien .... pero al menos uno
+            "createdAt": datetime.now().isoformat()
+            # "file": cloudinary.subir_a_cloudinary(data['file']), # Esto es requerido
+            # "photos": urls_fotos  # Guarda las URLs #Esto tambien .... pero al menos uno
         }
         
         doc_ref.set(project_data)
