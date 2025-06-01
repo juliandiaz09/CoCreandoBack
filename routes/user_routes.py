@@ -115,13 +115,35 @@ def obtener_usuario(id):
 @user_bp.route('/eliminarUsuario/<string:id>', methods=['DELETE'])
 @firebase_auth_required('eliminar_usuario')
 def eliminar_usuario(id):
+    try:
+        # Obtener usuario actual
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({"error": "No autorizado"}), 401
 
-    doc_ref = colection_ref.document(id)
-    if not doc_ref.get().exists:
-        return jsonify({"error": "No encontrado"}), 404
+        # Verificar permisos (solo admin o el propio usuario)
+        if current_user.get('role') != 'admin' and current_user.get('uid') != id:
+            return jsonify({"error": "No autorizado"}), 403
 
-    doc_ref.delete()
-    return jsonify({"mensaje": "Usuario eliminado"}), 200
+        # Eliminar de Firestore
+        doc_ref = db.collection('users').document(id)
+        if not doc_ref.get().exists:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        doc_ref.delete()
+
+        # Eliminar de Firebase Auth (opcional)
+        try:
+            auth.delete_user(id)
+        except Exception as auth_error:
+            print(f"Error eliminando usuario de Auth: {str(auth_error)}")
+            # Puedes decidir si quieres continuar o no
+
+        return jsonify({"mensaje": "Usuario eliminado exitosamente"}), 200
+
+    except Exception as e:
+        print(f"Error eliminando usuario: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 
 
