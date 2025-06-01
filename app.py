@@ -29,11 +29,22 @@ init_socketio(app)
 
 @app.route('/conexiones-activas')
 def conexiones_activas():
-    from flask_socketio import rooms
-    return jsonify({
-        "rooms": rooms(),
-        "connections": socketio.server.manager.rooms
-    }) 
+    try:
+        # Accede directamente al manager de Socket.IO
+        manager = socketio.server.manager
+        return jsonify({
+            "total_connections": len(manager.rooms.get('/', {})),
+            "namespaces": list(manager.rooms.keys()),
+            "room_details": {
+                room: len(sids) for room, sids in manager.rooms.items() if room != '/'
+            },
+            "debug_info": {
+                "engineio_version": getattr(socketio.server.eio, "engineio_version", None),
+                "active_sockets": list(manager.rooms.get('/', {}).keys())
+            }
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Ejecuta con socketio.run para permitir WebSocket
 if __name__ == '__main__':
