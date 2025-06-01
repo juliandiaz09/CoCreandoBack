@@ -27,7 +27,7 @@ def emitir_notificacion(user_id, tipo, titulo, mensaje):
     db.collection("notifications").document(user_id)\
     .collection("user_notifications").document(noti.id).set(noti.to_dict())
 
-    socketio.emit('nueva_notificacion', noti.to_dict(), room=user_id)
+    emit('nueva_notificacion', noti.to_dict(), room=user_id)
 
 @socketio.on('obtener_notificaciones')
 def obtener_notificaciones(data):
