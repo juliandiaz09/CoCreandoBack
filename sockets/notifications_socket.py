@@ -5,7 +5,8 @@ import uuid
 from datetime import datetime
 from models.notification.Notification import Notificacion
 from flask_socketio import SocketIO
-import request
+from flask import request
+
 
 socketio = SocketIO(cors_allowed_origins="*")
 db = firestore.client()
