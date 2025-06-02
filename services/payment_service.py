@@ -30,7 +30,7 @@ def generar_formulario_pago(id_proyecto, descripcion, valor, email_cliente):
       <input name="signature"     type="hidden"  value="{signature}">
       <input name="buyerEmail"    type="hidden"  value="{email_cliente}">
       <input name="responseUrl"   type="hidden"  value="https://cocreandoback.onrender.com/pasarela/api/pagos/respuesta">
-      <input name="confirmationUrl" type="hidden" value="https://cocreandoback.onrender.com/pasarela/api/pagos/respuesta">
+      <input name="confirmationUrl" type="hidden" value="https://cocreandoback.onrender.com/pasarela/api/pagos/respuesta1">
       <input name="test"          type="hidden"  value="1">
       <input name="Submit"        type="submit"  value="Pagar con PayU">
     </form>
