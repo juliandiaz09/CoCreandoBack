@@ -168,12 +168,27 @@ def filtro_proyectos(campo, valor):
 @project_bp.route('/eliminarProyecto/<string:id>', methods=['DELETE'])
 @firebase_auth_required('eliminar_Proyecto')
 def eliminar_proyecto(id):
-    doc_ref = colection_ref.document(id)
-    if not doc_ref.get().exists:
-        return jsonify({"mensaje": "Proyecto no encontrado"}), 404
-
-    doc_ref.delete()
-    return jsonify({"mensaje": "Proyecto eliminado exitosamente"}), 200
+    try:
+        current_user = get_current_user()
+        project_ref = colection_ref.document(id)
+        project = project_ref.get().to_dict()
+        
+        if not project:
+            return jsonify({"error": "Proyecto no encontrado"}), 404
+            
+        # Verificar permisos: admin o creador
+        if current_user.get('role') != 'admin' and current_user.get('uid') != project.get('creator'):
+            return jsonify({"error": "No autorizado"}), 403
+            
+        # Verificar que no haya fondos recaudados
+        if project.get('collected', 0) > 0:
+            return jsonify({"error": "No se puede eliminar un proyecto con fondos recaudados"}), 400
+            
+        project_ref.delete()
+        return jsonify({"mensaje": "Proyecto eliminado exitosamente"}), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @project_bp.route('/aprobarProyecto/<string:id>', methods=['PUT'])
 @firebase_auth_required('administrar_sistema')

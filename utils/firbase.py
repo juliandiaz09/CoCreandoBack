@@ -20,8 +20,9 @@ PERMISSIONS = {
     'usuario': {
         'listar_usuarios': False,
         'crear_usuario': False,
-        'actualizar_usuario': False,  # Solo puede actualizar su propio perfil
-        'eliminar_usuario': False,
+        'actualizar_usuario': True,  # Solo puede actualizar su propio perfil
+        'eliminar_usuario': True,    # Solo puede eliminar su propia cuenta
+        'obtener_usuario': 'self',
         'obtener_usuario': True,     # Solo puede obtener su propio perfil
         'administrar_sistema': False,
         'eliminar_Proyecto': True,
@@ -70,9 +71,22 @@ def firebase_auth_required(permission=None):
                     **user_data
                 }
 
-                # Verificación de permisos
+                # Verificación de permisos mejorada
                 if permission:
-                    if not PERMISSIONS[user_role].get(permission, False):
+                    permission_value = PERMISSIONS[user_role].get(permission, False)
+                
+                    # Lógica para permisos especiales 'self'
+                    if permission_value == 'self':
+                        # Obtener el ID del recurso objetivo (ej: user_id en la URL)
+                        target_id = kwargs.get('id') or request.json.get('id')
+                    
+                        # Permitir si el usuario está actuando sobre sí mismo
+                        if target_id == uid:
+                            return f(*args, **kwargs)
+                        return jsonify({"error": "Solo puedes realizar esta acción sobre tu propia cuenta"}), 403
+                
+                    # Lógica para permisos booleanos tradicionales
+                    elif not permission_value:
                         return jsonify({"error": f"Permiso denegado para la acción '{permission}'"}), 403
 
                 return f(*args, **kwargs)
