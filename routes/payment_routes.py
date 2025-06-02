@@ -29,7 +29,6 @@ def crear_pago():
 def confirmacion_pago():
     data = request.args.to_dict()
 
-
     # 1. Validar estado de la transacción
     if data.get("transactionState") != "4":
         return "<h2>Transacción no aprobada</h2>", 200
@@ -91,11 +90,11 @@ def confirmacion_pago():
             }])
         })
 
-
-        return """
-            <h2>¡Transacción Exitosa!</h2>
-            <a href="/">Volver al inicio</a>
-        """, 200
+        html_response = """
+        <h2>¡Transacción Exitosa!</h2>
+        """
+        
+        return html_response, 200
 
     except Exception as e:
         print("❌ Error en confirmacion_pago:", str(e))
@@ -105,13 +104,11 @@ def confirmacion_pago():
 # def confirmacion_pago():
 #     data = request.args.to_dict()
 #     print("Datos de redirección (GET):", data)
-
 #     if data.get("transactionState") != "4" and data.get("polTransactionState") != "4":
 #         return """
 #             <h2>Transacción Rechazada</h2>
 #             <a href="/">Volver a la página principal</a>
 #         """, 200
-
 #     try:
 #         referencia = data.get("referenceCode")
 #         id_proyecto = referencia.split("_")[1]
@@ -122,16 +119,12 @@ def confirmacion_pago():
 #         db.collection("proyectos").document(id_proyecto).update({
 #             "collected": firestore.Increment(valor)
 #         })
-
 #         # Buscar usuario por email
 #         usuarios_ref = db.collection("users")
 #         query = usuarios_ref.where("email", "==", email).limit(1).get()
-
 #         if not query:
 #             return "<h2>Usuario no encontrado</h2>", 404
-
 #         user_doc_id = query[0].id
-
 #         # Actualizar pagos del usuario
 #         db.collection("users").document(user_doc_id).update({
 #             "pagos": firestore.ArrayUnion([{
@@ -143,19 +136,33 @@ def confirmacion_pago():
 #                 "currency": data.get("currency"),
 #             }])
 #         })
-
 #         html_response = """
 #         <h2>¡Transacción Exitosa!</h2>
 #         """
 #         aportante_doc = query[0].to_dict()
 #         nombre_aportante = aportante_doc.get("name", "Un usuario")
-
 #         proyecto = obtener_datos_proyecto(id_proyecto)
+
 #         if proyecto:
 #             uid_creator = proyecto.get("creator", {}).get("uid")
-
 #         mensaje = f"Hola, {nombre_aportante} ha realizado un aporte de ${valor:.2f} a tu proyecto."
+      
         
+#         # 5. Actualizar BD
+#         db.collection("proyectos").document(id_proyecto).update({
+#             "collected": firestore.Increment(valor)
+#         })
+#         nuevo_aporte = {
+#             "amount": valor,
+#             "date": datetime.now().strftime("%d de %B de %Y, %I:%M:%S %p. UTC-5"),
+#             "name": nombre_aportante
+#         }
+
+#         db.collection("proyectos").document(id_proyecto).update({
+#             "supporters": firestore.ArrayUnion([nuevo_aporte])
+#         })
+
+
 #         if uid_creator != user_doc_id:
 #             emitir_notificacion(
 #                 uid_creator,  # Solo al dueño del proyecto
