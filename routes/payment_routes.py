@@ -4,15 +4,11 @@ from utils import firbase
 from firebase_admin import firestore
 from routes.project_routes import obtener_datos_proyecto
 from sockets.notifications_socket import emitir_notificacion
+from datetime import datetime
 
 payment_bp = Blueprint('payment_bp', __name__)
 db = firestore.client()
 
-#@payment_bp.route('/procesar-pago', methods=['POST'])
-#def procesar_pago():
-#    datos = request.json
-#    respuesta_simulada = generar_formulario_pago(datos)
-#    return jsonify(respuesta_simulada)
 
 @payment_bp.route('/crear-pago', methods=['POST'])
 def crear_pago():
@@ -32,7 +28,7 @@ def crear_pago():
 @payment_bp.route('/api/pagos/respuesta', methods=['GET'])
 def confirmacion_pago():
     data = request.args.to_dict()
-    print("🔍 Datos de PayU recibidos:", data)
+
 
     # 1. Validar estado de la transacción
     if data.get("transactionState") != "4":
@@ -85,6 +81,15 @@ def confirmacion_pago():
         db.collection("proyectos").document(id_proyecto).update({
             "collected": firestore.Increment(valor)
         })
+        nuevo_aporte = {
+            "amount": valor,
+            "date": datetime.now().strftime("%d de %B de %Y, %I:%M:%S %p. UTC-5"),
+            "name": nombre_aportante
+        }
+
+        db.collection("proyectos").document(id_proyecto).update({
+            "supporters": firestore.ArrayUnion([nuevo_aporte])
+        })
 
         db.collection("users").document(user_doc_id).update({
             "pagos": firestore.ArrayUnion([{
@@ -93,6 +98,7 @@ def confirmacion_pago():
                 "transaction_id": data.get("transactionId")
             }])
         })
+
 
         return """
             <h2>¡Transacción Exitosa!</h2>
