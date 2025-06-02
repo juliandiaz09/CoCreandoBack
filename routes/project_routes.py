@@ -97,27 +97,25 @@ def crear_proyecto():
         return jsonify({"error": str(e)}), 500
 
 @project_bp.route('/actualizarProyecto/<string:id>', methods=['PUT'])
-@firebase_auth_required('actualizar_proyecto')
 def actualizar_proyecto(id):
     data = request.get_json()
     
-    # Verificar si el usuario que hace la petición es admin o el creador del proyecto
     current_user = get_current_user()
     project = colection_ref.document(id).get().to_dict()
     
-    if current_user.get('role') != 'admin' and current_user.get('uid') != project.get('creator'):
-        return jsonify({"error": "No autorizado"}), 403
-    
-    doc_ref = colection_ref.document(id)
-    if not doc_ref.get().exists:
-        return jsonify({"mensaje": "Proyecto no encontrado"}), 404
+    if current_user.get('uid') == project.get('creator').get('uid'):
+        doc_ref = colection_ref.document(id)
+        if not doc_ref.get().exists:
+            return jsonify({"mensaje": "Proyecto no encontrado"}), 404
 
-    # Solo permitir actualizar ciertos campos
-    allowed_fields = ['status', 'title', 'description', 'category']
-    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+        # Solo permitir actualizar ciertos campos
+        allowed_fields = ['status', 'title', 'description', 'category']
+        update_data = {k: v for k, v in data.items() if k in allowed_fields}
+        
+        doc_ref.update(update_data)
+        return jsonify({"mensaje": "Proyecto actualizado exitosamente"}), 200
     
-    doc_ref.update(update_data)
-    return jsonify({"mensaje": "Proyecto actualizado exitosamente"}), 200
+    return jsonify({"error": "No autorizado"}), 403
 
 @project_bp.route('/obtenerProyecto/<string:id>', methods=['GET'])
 def obtener_proyecto(id):
