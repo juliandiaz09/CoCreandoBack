@@ -61,21 +61,13 @@ def confirmacion_pago():
         else:
             print(f"📢 Notificando al creador {uid_creator}. Inversor: {user_doc_id} no recibe notificación.")
             
-            # 4. Evitar notificaciones duplicadas (verificar si ya existe)
-            noti_ref = db.collection("notifications").document(uid_creator) \
-                .collection("user_notifications") \
-                .where("message", "==", f"{nombre_aportante} ha aportado ${valor:.2f}") \
-                .limit(1).get()
-
-            if not noti_ref:
-                emitir_notificacion(
-                    uid_creator,
-                    "Aporte al proyecto",
-                    "¡Nuevo aporte!",
-                    f"{nombre_aportante} ha aportado ${valor:.2f} a tu proyecto."
-                )
-            else:
-                print("⚠️ Notificación ya existente. No se envía duplicado.")
+            emitir_notificacion(
+                uid_creator,
+                "Aporte al proyecto",
+                "¡Nuevo aporte!",
+                f"{nombre_aportante} ha aportado ${valor:.2f} a tu proyecto."
+            )
+        
 
         # 5. Actualizar BD
         db.collection("proyectos").document(id_proyecto).update({
