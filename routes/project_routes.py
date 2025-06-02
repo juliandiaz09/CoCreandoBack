@@ -166,7 +166,6 @@ def filtro_proyectos(campo, valor):
     return proyectos
 
 @project_bp.route('/eliminarProyecto/<string:id>', methods=['DELETE'])
-@firebase_auth_required('eliminar_Proyecto')
 def eliminar_proyecto(id):
     try:
         current_user = get_current_user()
