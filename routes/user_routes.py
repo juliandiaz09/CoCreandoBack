@@ -116,33 +116,42 @@ def obtener_usuario(id):
 @firebase_auth_required('eliminar_usuario')
 def eliminar_usuario(id):
     try:
-        # Obtener usuario actual
         current_user = get_current_user()
         if not current_user:
             return jsonify({"error": "No autorizado"}), 401
 
-        # Verificar permisos (solo admin o el propio usuario)
-        if current_user.get('role') != 'admin' and current_user.get('uid') != id:
+        # Manejar ambos nombres de campo para el rol
+        user_role = current_user.get('role') or current_user.get('rol') or 'usuario'
+        
+        # Verificar permisos (admin o el propio usuario)
+        if user_role != 'admin' and current_user.get('uid') != id:
             return jsonify({"error": "No autorizado"}), 403
 
-        # Eliminar de Firestore
+        # Referencia corregida usando colection_ref
         doc_ref = colection_ref.document(id)
         if not doc_ref.get().exists:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
+        # Eliminar de Firestore
         doc_ref.delete()
 
-        # Eliminar de Firebase Auth
+        # Eliminar de Firebase Auth con manejo de errores
         try:
             auth.delete_user(id)
             return jsonify({"mensaje": "Usuario eliminado exitosamente"}), 200
+        except auth.UserNotFoundError:
+            # Usuario ya eliminado o no existe en Auth
+            return jsonify({"mensaje": "Usuario eliminado de Firestore"}), 200
         except Exception as auth_error:
             print(f"Error eliminando usuario de Auth: {str(auth_error)}")
-            return jsonify({"error": "Usuario eliminado de Firestore pero no de Auth"}), 200
+            return jsonify({
+                "error": "Usuario eliminado de Firestore pero no de Auth",
+                "detalle": str(auth_error)
+            }), 500
 
     except Exception as e:
         print(f"Error eliminando usuario: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error interno: {str(e)}"}), 500
 
 
 
