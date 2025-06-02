@@ -169,9 +169,13 @@ def filtro_proyectos(campo, valor):
 def eliminar_proyecto(id):
     try:
         current_user = get_current_user()
+        print(current_user.get('uid'))
+
         project_ref = colection_ref.document(id)
         project = project_ref.get().to_dict()
         
+        print(project.get('creator'))
+
         if not project:
             return jsonify({"error": "Proyecto no encontrado"}), 404
             
