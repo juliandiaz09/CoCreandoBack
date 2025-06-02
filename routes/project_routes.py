@@ -40,7 +40,11 @@ def crear_proyecto():
         for field in required_fields:
             if field not in data or not data[field]:
                 return jsonify({"error": f"Campo requerido faltante: {field}"}), 400
-                
+        
+                # Validar que existe información del creador
+        if 'creator' not in data or not data['creator'] or 'uid' not in data['creator']:
+            return jsonify({"error": "Información del creador faltante o inválida"}), 400
+
          # Convertir la fecha deadline a formato ISO si es una cadena
         deadline = data["deadline"]
         if isinstance(deadline, str):
@@ -180,7 +184,7 @@ def eliminar_proyecto(id):
             return jsonify({"error": "Proyecto no encontrado"}), 404
             
         # Verificar permisos: admin o creador
-        if current_user.get('role') != 'admin' and current_user.get('uid') != project.get('creator'):
+        if current_user.get('role') != 'admin' and current_user.get('uid') != project.get('creator').get('uid'):
             return jsonify({"error": "No autorizado"}), 403
             
         # Verificar que no haya fondos recaudados
