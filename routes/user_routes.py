@@ -126,20 +126,19 @@ def eliminar_usuario(id):
             return jsonify({"error": "No autorizado"}), 403
 
         # Eliminar de Firestore
-        doc_ref = db.collection('users').document(id)
+        doc_ref = colection_ref.document(id)
         if not doc_ref.get().exists:
             return jsonify({"error": "Usuario no encontrado"}), 404
 
         doc_ref.delete()
 
-        # Eliminar de Firebase Auth (opcional)
+        # Eliminar de Firebase Auth
         try:
             auth.delete_user(id)
+            return jsonify({"mensaje": "Usuario eliminado exitosamente"}), 200
         except Exception as auth_error:
             print(f"Error eliminando usuario de Auth: {str(auth_error)}")
-            # Puedes decidir si quieres continuar o no
-
-        return jsonify({"mensaje": "Usuario eliminado exitosamente"}), 200
+            return jsonify({"error": "Usuario eliminado de Firestore pero no de Auth"}), 200
 
     except Exception as e:
         print(f"Error eliminando usuario: {str(e)}")
