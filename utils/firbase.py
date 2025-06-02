@@ -20,8 +20,8 @@ PERMISSIONS = {
     'usuario': {
         'listar_usuarios': False,
         'crear_usuario': False,
-        'actualizar_usuario': 'self',  # Solo puede actualizar su propio perfil
-        'eliminar_usuario': 'self',    # Solo puede eliminar su propia cuenta
+        'actualizar_usuario': True,  # Solo puede actualizar su propio perfil
+        'eliminar_usuario': True,    # Solo puede eliminar su propia cuenta
         'obtener_usuario': 'self',
         'obtener_usuario': True,     # Solo puede obtener su propio perfil
         'administrar_sistema': False,
