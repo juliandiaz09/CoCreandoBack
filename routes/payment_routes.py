@@ -114,7 +114,7 @@ def confirmacion_pago():
 
         return """
             <h2>¡Transacción Exitosa!</h2>
-            <a href="/">Volver a la página principal</a>
+            <h2>Cierra esta página y continua invirtiendo o donando</h2>
         """, 200
 
     except Exception as e:
